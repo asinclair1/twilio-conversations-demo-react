@@ -36,6 +36,7 @@ import { ReduxParticipant } from "../../store/reducers/participantsReducer";
 import { isValidPhoneNumber } from "libphonenumber-js";
 import { AppState } from "../../store";
 import { getTranslation } from "./../../utils/localUtils";
+import AddAppleParticipantModal from "../modals/addAppleParticipantModal";
 
 interface SettingsProps {
   participants: ReduxParticipant[];
@@ -62,6 +63,10 @@ const Settings: React.FC<SettingsProps> = (props: SettingsProps) => {
   const [isAddWhatsAppOpen, setIsAddWhatsAppOpen] = useState(false);
   const handleWhatsAppOpen = () => setIsAddWhatsAppOpen(true);
   const handleWhatsAppClose = () => setIsAddWhatsAppOpen(false);
+
+  const [isAddAppleOpen, setIsAddAppleOpen] = useState(false);
+  const handleAppleOpen = () => setIsAddAppleOpen(true);
+  const handleAppleClose = () => setIsAddAppleOpen(false);
 
   const local = useSelector((state: AppState) => state.local);
   const manageParticipants = getTranslation(local, "manageParticipants");
@@ -155,6 +160,9 @@ const Settings: React.FC<SettingsProps> = (props: SettingsProps) => {
                 return null;
               case Content.AddWhatsApp:
                 handleWhatsAppOpen();
+                return null;
+              case Content.AddApple:
+                handleAppleOpen();
                 return null;
               case Content.AddChat:
                 handleChatOpen();
@@ -267,6 +275,57 @@ const Settings: React.FC<SettingsProps> = (props: SettingsProps) => {
               );
               emptyData();
               handleWhatsAppClose();
+            } catch (e) {
+              setErrorData(e.body);
+              setErrorToShow(ERROR_MODAL_MESSAGES.ADD_PARTICIPANT);
+            }
+          }}
+        />
+      )}
+      {isAddAppleOpen && (
+        <AddAppleParticipantModal
+          name={name}
+          proxyName={nameProxy}
+          isModalOpen={isAddAppleOpen}
+          title={manageParticipants}
+          setName={(name: string) => {
+            setName(name);
+            // setError(
+            //   !isValidPhoneNumber(`+${name}`)
+            //     ? invalidPhoneNumberErrorMessage
+            //     : ""
+            // );
+          }}
+          setProxyName={(name: string) => {
+            setNameProxy(name);
+            // setErrorProxy(
+            //   !isValidPhoneNumber(`+${name}`)
+            //     ? invalidPhoneNumberErrorMessage
+            //     : ""
+            // );
+          }}
+          error={error}
+          errorProxy={errorProxy}
+          nameInputRef={nameInputRef}
+          handleClose={() => {
+            emptyData();
+            handleAppleClose();
+          }}
+          onBack={() => {
+            emptyData();
+            handleAppleClose();
+            props.setIsManageParticipantOpen(true);
+          }}
+          action={async () => {
+            try {
+              await addNonChatParticipant(
+                name,
+                nameProxy,
+                sdkConvo,
+                addNotifications
+              );
+              emptyData();
+              handleAppleClose();
             } catch (e) {
               setErrorData(e.body);
               setErrorToShow(ERROR_MODAL_MESSAGES.ADD_PARTICIPANT);

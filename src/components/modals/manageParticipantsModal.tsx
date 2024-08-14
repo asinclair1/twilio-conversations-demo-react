@@ -42,6 +42,7 @@ const ManageParticipantsModal: React.FC<ManageParticipantsModalProps> = (
   const addParticipant = getTranslation(local, "addParticipant");
   const smsParticipant = getTranslation(local, "smsParticipant");
   const whatsAppParticipant = getTranslation(local, "whatsAppParticipant");
+  const appleParticipant = getTranslation(local, "appleParticipant");
   const chatParticipant = getTranslation(local, "chatParticipant");
   const remove = getTranslation(local, "remove");
 
@@ -88,6 +89,14 @@ const ManageParticipantsModal: React.FC<ManageParticipantsModalProps> = (
                   }}
                 >
                   {whatsAppParticipant}
+                </MenuItem>
+                <MenuItem
+                  {...menu}
+                  onClick={() => {
+                    props.onClick(Content.AddApple);
+                  }}
+                >
+                  {appleParticipant}
                 </MenuItem>
                 <MenuItem
                   {...menu}

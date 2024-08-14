@@ -1,0 +1,308 @@
+Index: src/components/modals/addAppleParticipantModal.tsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/components/modals/addAppleParticipantModal.tsx b/src/components/modals/addAppleParticipantModal.tsx
+new file mode 100644
+--- /dev/null	(revision 227fd65e2e2f80f2d7dc8f9d48e5cbda272291eb)
++++ b/src/components/modals/addAppleParticipantModal.tsx	(revision 227fd65e2e2f80f2d7dc8f9d48e5cbda272291eb)
+@@ -0,0 +1,95 @@
++import { ModalBody, Box } from "@twilio-paste/core";
++import { RefObject } from "react";
++import ModalInputField from "./ModalInputField";
++import AddParticipantFooter from "./addParticipantFooter";
++import { ActionName } from "../../types";
++import ConvoModal from "./ConvoModal";
++import { AppState } from "../../store";
++import { getTranslation } from "./../../utils/localUtils";
++import { useSelector } from "react-redux";
++
++interface AddAppleParticipantModalProps {
++  name: string;
++  isModalOpen: boolean;
++  title: string;
++  proxyName: string;
++  setName: (name: string) => void;
++  setProxyName: (name: string) => void;
++  error: string;
++  errorProxy: string;
++  nameInputRef: RefObject<HTMLInputElement>;
++  onBack: () => void;
++  action: () => void;
++  handleClose: () => void;
++}
++
++const AddAppleParticipantModal: React.FC<AddAppleParticipantModalProps> = (
++  props: AddAppleParticipantModalProps
++) => {
++  const local = useSelector((state: AppState) => state.local);
++  const addAppleParticipant = getTranslation(local, "addAppleParticipant");
++  const appleNum = getTranslation(local, "appleNum");
++  const appleHelpTxt = getTranslation(local, "appleHelpTxt");
++  const proxyNum = getTranslation(local, "proxyNum");
++  const proxyAppleNumHelpTxt = getTranslation(local, "proxyAppleNumHelpTxt");
++
++  return (
++    <>
++      <ConvoModal
++        handleClose={() => props.handleClose()}
++        isModalOpen={props.isModalOpen}
++        title={props.title}
++        modalBody={
++          <ModalBody>
++            <h3>{addAppleParticipant}</h3>
++            <Box
++              as="form"
++              onKeyPress={async (e) => {
++                if (e.key === "Enter") {
++                  if (props.action) {
++                    e.preventDefault();
++                    props.action();
++                  }
++                }
++              }}
++            >
++              <ModalInputField
++                isFocused={true}
++                label={appleNum}
++                input={props.name}
++                placeholder="apple:urn:mbid: ..."
++                onChange={props.setName}
++                error={props.error}
++                help_text={appleHelpTxt}
++                prefixType="apple:"
++              />
++              <ModalInputField
++                label={proxyNum}
++                input={props.proxyName}
++                placeholder="apple:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
++                onChange={props.setProxyName}
++                error={props.errorProxy}
++                help_text={proxyAppleNumHelpTxt}
++                prefixType="apple:"
++              />
++            </Box>
++          </ModalBody>
++        }
++        modalFooter={
++          <AddParticipantFooter
++            isSaveDisabled={
++              !props.name.trim() || !props.proxyName.trim() || !!props.error
++            }
++            actionName={ActionName.Save}
++            onBack={() => {
++              props.onBack();
++            }}
++            action={props.action}
++          />
++        }
++      />
++    </>
++  );
++};
++
++export default AddAppleParticipantModal;
+Index: src/components/modals/manageParticipantsModal.tsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/components/modals/manageParticipantsModal.tsx b/src/components/modals/manageParticipantsModal.tsx
+--- a/src/components/modals/manageParticipantsModal.tsx	(revision af30e30f4183c9c004b89749202b669cd67b2942)
++++ b/src/components/modals/manageParticipantsModal.tsx	(revision 227fd65e2e2f80f2d7dc8f9d48e5cbda272291eb)
+@@ -42,6 +42,7 @@
+   const addParticipant = getTranslation(local, "addParticipant");
+   const smsParticipant = getTranslation(local, "smsParticipant");
+   const whatsAppParticipant = getTranslation(local, "whatsAppParticipant");
++  const appleParticipant = getTranslation(local, "appleParticipant");
+   const chatParticipant = getTranslation(local, "chatParticipant");
+   const remove = getTranslation(local, "remove");
+ 
+@@ -88,6 +89,14 @@
+                   }}
+                 >
+                   {whatsAppParticipant}
++                </MenuItem>
++                <MenuItem
++                  {...menu}
++                  onClick={() => {
++                    props.onClick(Content.AddApple);
++                  }}
++                >
++                  {appleParticipant}
+                 </MenuItem>
+                 <MenuItem
+                   {...menu}
+Index: src/components/modals/ModalInputField.tsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/components/modals/ModalInputField.tsx b/src/components/modals/ModalInputField.tsx
+--- a/src/components/modals/ModalInputField.tsx	(revision af30e30f4183c9c004b89749202b669cd67b2942)
++++ b/src/components/modals/ModalInputField.tsx	(revision 227fd65e2e2f80f2d7dc8f9d48e5cbda272291eb)
+@@ -11,6 +11,7 @@
+ enum PrefixType {
+   SMS = "SMS",
+   WhatsApp = "WhatsApp",
++  Apple = "Apple",
+ }
+ 
+ function getPrefixType(prefixType: string | undefined) {
+@@ -19,6 +20,8 @@
+       return "+";
+     case PrefixType.WhatsApp:
+       return "WhatsApp +";
++    case PrefixType.Apple:
++      return "";
+     default:
+       return undefined;
+   }
+Index: src/components/settings/Settings.tsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/components/settings/Settings.tsx b/src/components/settings/Settings.tsx
+--- a/src/components/settings/Settings.tsx	(revision af30e30f4183c9c004b89749202b669cd67b2942)
++++ b/src/components/settings/Settings.tsx	(revision 227fd65e2e2f80f2d7dc8f9d48e5cbda272291eb)
+@@ -36,6 +36,7 @@
+ import { isValidPhoneNumber } from "libphonenumber-js";
+ import { AppState } from "../../store";
+ import { getTranslation } from "./../../utils/localUtils";
++import AddAppleParticipantModal from "../modals/addAppleParticipantModal";
+ 
+ interface SettingsProps {
+   participants: ReduxParticipant[];
+@@ -63,6 +64,10 @@
+   const handleWhatsAppOpen = () => setIsAddWhatsAppOpen(true);
+   const handleWhatsAppClose = () => setIsAddWhatsAppOpen(false);
+ 
++  const [isAddAppleOpen, setIsAddAppleOpen] = useState(false);
++  const handleAppleOpen = () => setIsAddAppleOpen(true);
++  const handleAppleClose = () => setIsAddAppleOpen(false);
++
+   const local = useSelector((state: AppState) => state.local);
+   const manageParticipants = getTranslation(local, "manageParticipants");
+ 
+@@ -155,6 +160,9 @@
+                 return null;
+               case Content.AddWhatsApp:
+                 handleWhatsAppOpen();
++                return null;
++              case Content.AddApple:
++                handleAppleOpen();
+                 return null;
+               case Content.AddChat:
+                 handleChatOpen();
+@@ -270,6 +278,57 @@
+             } catch (e) {
+               setErrorData(e.body);
+               setErrorToShow(ERROR_MODAL_MESSAGES.ADD_PARTICIPANT);
++            }
++          }}
++        />
++      )}
++      {isAddAppleOpen && (
++        <AddAppleParticipantModal
++          name={name}
++          proxyName={nameProxy}
++          isModalOpen={isAddAppleOpen}
++          title={manageParticipants}
++          setName={(name: string) => {
++            setName(name);
++            // setError(
++            //   !isValidPhoneNumber(`+${name}`)
++            //     ? invalidPhoneNumberErrorMessage
++            //     : ""
++            // );
++          }}
++          setProxyName={(name: string) => {
++            setNameProxy(name);
++            // setErrorProxy(
++            //   !isValidPhoneNumber(`+${name}`)
++            //     ? invalidPhoneNumberErrorMessage
++            //     : ""
++            // );
++          }}
++          error={error}
++          errorProxy={errorProxy}
++          nameInputRef={nameInputRef}
++          handleClose={() => {
++            emptyData();
++            handleAppleClose();
++          }}
++          onBack={() => {
++            emptyData();
++            handleAppleClose();
++            props.setIsManageParticipantOpen(true);
++          }}
++          action={async () => {
++            try {
++              await addNonChatParticipant(
++                name,
++                nameProxy,
++                sdkConvo,
++                addNotifications
++              );
++              emptyData();
++              handleAppleClose();
++            } catch (e) {
++              setErrorData(e.body);
++              setErrorToShow(ERROR_MODAL_MESSAGES.ADD_PARTICIPANT);
+             }
+           }}
+         />
+Index: src/utils/localUtils.tsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/utils/localUtils.tsx b/src/utils/localUtils.tsx
+--- a/src/utils/localUtils.tsx	(revision af30e30f4183c9c004b89749202b669cd67b2942)
++++ b/src/utils/localUtils.tsx	(revision 227fd65e2e2f80f2d7dc8f9d48e5cbda272291eb)
+@@ -62,22 +62,28 @@
+     participants: "Participants",
+     addParticipant: "Add Participant",
+     smsParticipant: "SMS Participant",
+-    whatsAppParticipant: "SMS participant",
++    whatsAppParticipant: "WhatsApp participant",
++    appleParticipant: "Apple Participant",
+     chatParticipant: "Chat participant",
+     leaveConvo: "Leave Conversation",
+     addParticipants: "Add Participants",
+     addWhatsAppParticipant: "Add WhatsApp participant",
++    addAppleParticipant: "Add Apple participant",
+     addSMSParticipant: "Add SMS participant",
+     addChatParticipant: "Add Chat participant",
+     otherParticipants: "and {count} other participants",
+     singularParticipant: "and 1 other participant",
+     whatsAppNum: "WhatsApp number",
++    appleNum: "Apple sender",
+     whatsAppHelpTxt: "The WhatsApp phone number of the participant.",
++    appleHelpTxt: "The apple sender id",
+     smsNum: "Phone number",
+     smsHelpTxt: "The phone number of the participant.",
+     proxyNum: "Proxy phone number",
+     proxyNumHelpTxt:
+       "The Twilio phone number used by the participant in Conversations.",
++    proxyAppleNumHelpTxt:
++      "The apple id used by the participant in Conversations.",
+     userIdentity: "User identity",
+     userIdentityHelperTxt:
+       "The identity used by the participant in Conversations.",
+Index: src/types.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/types.ts b/src/types.ts
+--- a/src/types.ts	(revision af30e30f4183c9c004b89749202b669cd67b2942)
++++ b/src/types.ts	(revision 227fd65e2e2f80f2d7dc8f9d48e5cbda272291eb)
+@@ -28,4 +28,5 @@
+   AddChat = "Add chat participant",
+   AddSMS = "Add SMS participant",
+   AddWhatsApp = "Add WhatsApp participant",
++  AddApple = "Add Apple participant",
+ }

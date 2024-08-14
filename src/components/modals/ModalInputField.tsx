@@ -11,6 +11,7 @@ import styles from "../../styles";
 enum PrefixType {
   SMS = "SMS",
   WhatsApp = "WhatsApp",
+  Apple = "Apple",
 }
 
 function getPrefixType(prefixType: string | undefined) {
@@ -19,6 +20,8 @@ function getPrefixType(prefixType: string | undefined) {
       return "+";
     case PrefixType.WhatsApp:
       return "WhatsApp +";
+    case PrefixType.Apple:
+      return "";
     default:
       return undefined;
   }
